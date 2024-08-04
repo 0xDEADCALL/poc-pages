@@ -24,7 +24,9 @@ jobs:
         run: |
           rm *.html
           rm data/data.json
+          ls
           python make_fake.py
           python home.py
+          ls
 
 
