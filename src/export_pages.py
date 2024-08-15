@@ -13,23 +13,19 @@ from bokeh.resources import INLINE
 from index import get_page as overview_page
 from details import get_page as details_page
 
-data_path = Path(__file__).parents[0] / "data" / "data.json"
-f = open(data_path)
+import awswrangler as wr
+import boto3
 
-synth_data = json.load(f)
 
-# Get main data
-main_data = [
-    {
-        x: row[x]
-        for x in ["exec_id", "exec_dt", "question_id", "question_desc", "subject", "result"]
-    }
-    for row in synth_data
-]
-data_pd = (pd.DataFrame.from_dict(main_data)
-           .assign(subject=lambda x: x.subject.astype(str))
-           .replace("None", "")
-           )
+# Get data from AWS
+session = boto3.Session()
+data_pd = wr.athena.read_sql_query(
+    "SELECT * FROM logs", 
+    database="datalogger", 
+    boto3_session=session
+)
+
+print(data_pd)
 
 # Make overview
 overview_pd = (
@@ -55,10 +51,4 @@ qid_rate_pd = (data_pd
 
 
 details_page(data_pd, qid_rate_pd).save("details.html")
-
 overview_page(data_pd).save("index.html")
-
-ROUTES = {
-    "overview": lambda: overview_page(data_pd),
-    "details": lambda: details_page(data_pd, qid_rate_pd)
-}

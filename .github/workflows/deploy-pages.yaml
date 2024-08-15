@@ -22,15 +22,11 @@ jobs:
       
       - name: Deploy Static Site
         run: |
-          rm *.html
-          rm data/data.json
-          ls
-          python make_fake.py
-          python home.py
+          rm report/*
           mkdir -p report
+          python src/export_pages.py
           mv index.html report/index.html
           mv details.html report/details.html
-          ls
       - name: Setup Pages
         if: github.ref == 'refs/head/main'
         uses: actions/configure-pages@v3
